@@ -22,23 +22,13 @@ const router = createBrowserRouter([
       {
         path: "/import",
         element: <ImportView />,
-        loader: async () => {
-          try {
-            const data = await client.get("/history/import");
-            console.log(data.data);
-            return data.data;
-          } catch (error) {
-            console.log(error);
-            return "error";
-          }
-        },
       },
       {
         path: "/export",
         element: <ExportView />,
       },
       {
-        path: "/detail",
+        path: "/detail/:id",
         element: <DetailBillView />,
       },
       {

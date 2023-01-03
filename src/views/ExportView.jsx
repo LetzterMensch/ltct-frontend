@@ -1,24 +1,27 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { client } from "../services/axios.js";
 
 function ExportView() {
+  const navigate = useNavigate();
   const [listBill, setListBill] = useState([]);
 
   useEffect(() => {
     var list = [];
     async function getList() {
-      list = await client.get("/request/export");
+      list = await client.get("/export");
       setListBill(list.data);
     }
     getList();
+    console.log(list);
   }, []);
   console.log(listBill);
 
   function viewDetail(bill_id) {
-    const link = use
+    navigate('/detail/' + bill_id);
     console.log(bill_id);
-npm   }
+  }
 
   return (
     <div>

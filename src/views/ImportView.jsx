@@ -1,14 +1,22 @@
-import React from "react";
-import { useLoaderData } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 import "dayjs/locale/vi";
+import { client } from "../services/axios";
 
 dayjs.locale("vi");
 dayjs.extend(calendar);
 
 function ImportView() {
-  const defaultData = useLoaderData();
+  const [defaultData, setData] = useState([]);
+  useEffect(() => {
+    async function getData() {
+      const defaultData = await client.get('/import');
+      setData(defaultData.data);
+      console.log(defaultData.data);
+    }
+    getData();
+  }, []);
 
   return (
     <div className="p-8">
@@ -16,30 +24,55 @@ function ImportView() {
         <h2 className="text-center font-medium mb-4">
           Danh sách các đơn nhập đã thực hiện
         </h2>
-        <div className="grid grid-cols-3 bg-black gap-[1px] border-black border-[1px]">
-          <div className="px-4 py-3 bg-green-400">Mã yêu cầu</div>
-          <div className="px-4 py-3 bg-green-400">Thời gian duyệt</div>
-          <div className="px-4 py-3 bg-green-400">Hành động</div>
-          {defaultData.map((item) => (
-            <>
-              <div key={item.historyId} className="px-4 py-3 bg-white">
-                {item.historyId}
-              </div>
-              <div
-                key={`${item.historyId}.${item.createdAt}`}
-                className="capitalize px-4 py-3 bg-white"
+        <div className="overflow-x-auto relative">
+        <table className="w-full text-sm text-left text-gray-500">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+            <tr>
+              <th scope="col" className="py-3 px-6">
+                Id
+              </th>
+              <th scope="col" className="py-3 px-6">
+                Ngày lập đơn
+              </th>
+              <th scope="col" className="py-3 px-6">
+                Tổng mặt hàng
+              </th>
+              <th scope="col" className="py-3 px-6">
+                Trạng thái
+              </th>
+              <th scope="col" className="py-3 px-6">
+                Tình trạng đóng gói
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {defaultData.map((item, index) => (
+              <tr className="bg-white border-b hover:cursor-pointer" key={index} 
+                onClick={() => viewDetail(item.historyId)}
               >
-                {dayjs().calendar(dayjs(item.createdAt))}
-              </div>
-              <div
-                key={`${item.historyId}.action`}
-                className="px-4 py-3 bg-white"
-              >
-                Xem
-              </div>
-            </>
-          ))}
-        </div>
+                <th
+                  scope="row"
+                  className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
+                >
+                  {item.historyId}
+                </th>
+                <td className="py-4 px-6">{item.createdAt}</td>
+                <td className="py-4 px-6">2</td>
+                <td className="py-4 px-6">
+                  <div className="px-4 py-2 text-blue-800 rounded-xl bg-yellow-300 w-fit">
+                    {item.status}
+                  </div>
+                </td>
+                <td className="py-4 px-6">
+                  <div className="px-4 py-2 text-green-800 font-semibold rounded-xl bg-green-400 w-fit">
+                    {!item.packingStatus && "PENDING"}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       </div>
     </div>
   );
