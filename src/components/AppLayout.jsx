@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   BuildingWarehouse,
   Dashboard,
+  List,
   PackgeExport,
   PackgeImport,
   User,
@@ -15,6 +16,11 @@ function AppLayout() {
       key: "/",
       icon: <Dashboard />,
       label: "Trang chủ",
+    },
+    {
+      key: "/products",
+      icon: <List />,
+      label: "Các sản phẩm",
     },
     {
       key: "/import",

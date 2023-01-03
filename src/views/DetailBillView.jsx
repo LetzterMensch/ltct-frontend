@@ -1,7 +1,17 @@
 import React, {} from "react";
 
+const fake = [
+    {
+      "idItem" : 1,
+      "createdAt" :  "2012-10-15T21:26:17Z",
+      "quantity": "12",
+      "status": "GOOD",
+      "packingStatus": "PENDING"
+    }
+];
+
 export const DetailBillView = () => {
-    var listDetail;
+    var listDetail = fake;
     return (
         <div>
             <div className="text-center text-4xl py-4 font-bold">Chi tiết đơn hàng <span>ID: 5</span></div>
@@ -27,26 +37,24 @@ export const DetailBillView = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr className="bg-white border-b">
-                    <th
-                        scope="row"
-                        className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
-                    >
-                        1
-                    </th>
-                    <td className="py-4 px-6">Sliver</td>
-                    <td className="py-4 px-6">Laptop</td>
-                    <td className="py-4 px-6">
-                        <div className="px-4 py-2 text-blue-800 rounded-xl bg-yellow-300 w-fit">
-                        PENDING
-                        </div>
-                    </td>
-                    <td className="py-4 px-6">
-                        <div className="px-4 py-2 text-green-800 font-semibold rounded-xl bg-green-400 w-fit">
-                        DONE
-                        </div>
-                    </td>
-                    </tr>
+                    {listDetail.map((item, index) => (
+                        <tr className="bg-white border-b" key={index}>
+                            <th
+                                scope="row"
+                                className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
+                            >
+                                {item.idItem}
+                            </th>
+                            <td className="py-4 px-6">{item.createdAt}</td>
+                            <td className="py-4 px-6">{item.quantity}</td>
+                            <td className="py-4 px-6">{item.status}</td>
+                            <td className="py-4 px-6">
+                                <div className="px-4 py-2 text-green-800 font-semibold rounded-xl bg-green-400 w-fit">
+                                    {item.packingStatus}
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
                 </table>
             </div>
