@@ -1,139 +1,219 @@
-import React, { useState } from "react";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Box } from "tabler-icons-react";
+import { Spinner } from "../components";
+import { client } from "../services/axios";
 
-// Mỗi 1 itemId có 1 cái này 
 const Product = () => {
   const navigate = useNavigate();
-  const product = {
-    "itemId": 1,
-    "productId": 2,
-    "productName": "Iphone 12",
-    "goodQuantity": 12,
-    "badQuantity" : 11,
+
+  const [data, setData] = useState();
+  const [error, setError] = useState();
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState({
+    open: false,
+    title: "title",
+    content: "content"
+  });
+
+  const fetchData = async (id) => {
+    setLoading(true);
+    try {
+      const data = await client.get(`/product/quantity/${id}`);
+      return data.data;
+    } catch (error) {
+      console.log(error);
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
   };
-  const [goodQuantity, setGood] = useState(product.goodQuantity);
-  const [badQuantity, setBad] = useState(product.badQuantity);
-  const total = product.goodQuantity + product.badQuantity;
 
-  function updateGoodProduct(number) {
-    if (number > product.goodQuantity) number = product.goodQuantity;
-    if (number < 0) number = 0;
-    console.log(number);
-    setGood(number);
-    setBad(total - number);
+  useEffect(() => {
+    let data = [];
+    let count = 1;
+    while (error) {
+      data.push(fetchData(count++));
+    }
+    console.log(data);
+    console.log("Hello");
+  }, []);
+
+  function viewDetailItem(arg) {
+    // navigate to view detail item
+    navigate(`/detail/${arg}`);
   }
 
-  function updateBadProduct(number) {
-    if (number > total) number = total;
-    if (number < 0) number = 0;
-    setBad(number);
-    setGood(total - number);
+  function changeStatus(status, item) {
+    console.log(status, item);
+    async function doAction() {
+      const res = await client
+        .patch(`/import/${item.historyId}`, {
+          status: status,
+        })
+        .then(function (response) {
+          console.log(response);
+          if (response.data.message !== "Success") {
+            setShowModal({
+              open : true,
+              title: "Can't set Status",
+              content: response.data.message
+            });
+          } else {
+            setShowModal({
+              open : true,
+              title: "Set Status Done",
+              content: response.data.message
+            });
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+    doAction();
   }
 
-  function update() {
-    console.log("IN");
-    // Thao tác với bên backend cập nhật số liệu 
-    navigate('/products');
-  }
-
-  return (
-      <div>
-    <div className="text-center text-4xl py-4 font-bold">Các mặt hàng trong kho</div>
-    {/* Filter */}
-    <div className="filter flex justify-between items-center p-4">
-      <div className="select">
-        <select
-          name=""
-          id=""
-          className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-3 py-1.5"
-        >
-          <option value="">Ngày hôm qua</option>
-          <option value="">Tuần này</option>
-          <option value="">Tháng này</option>
-        </select>
-      </div>
-      <div className="search">
-        <label className="sr-only">Search</label>
-        <div className="relative">
-          <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-            <svg
-              className="w-5 h-5 text-gray-500 dark:text-gray-400"
-              aria-hidden="true"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"></path>
-            </svg>
-          </div>
-          <input
-            type="text"
-            className="block p-2 pl-10 w-80 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Tìm kiếm"
-          />
+  return loading ? (
+    <div className="flex h-full justify-center items-center">
+      <Spinner />
+    </div>
+  ) : error ? (
+    <div className="flex h-full justify-center items-center">
+      <p className="text-4xl">😢 Có lỗi xảy ra khi lấy dữ liệu</p>
+    </div>
+  ) : (
+    <div className="p-4">
+      <div className="bg-white flex flex-col rounded-lg p-4">
+        <div className="text-center text-4xl py-4 font-bold">Các mặt hàng trong kho</div>
+        {/* Table */}
+        <div className="overflow-x-auto relative">
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th scope="col" className="py-3 px-6">
+                  Mã sản phẩm
+                </th>
+                <th scope="col" className="py-3 px-6">
+                  Mã mặt hàng
+                </th>
+                <th scope="col" className="py-3 px-6">
+                  Số hàng tốt
+                </th>
+                <th scope="col" className="py-3 px-6">
+                  Số hàng xấu
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.length !== 0 ? (
+                data.map((item, index) => (
+                  <tr className="bg-white border-b" key={index}>
+                    <th
+                      scope="row"
+                      className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
+                      onClick={() => viewDetailItem(item.historyId)}
+                    >
+                      {item.historyId}
+                    </th>
+                    <td className="py-4 px-6">
+                      {dayjs(dayjs(item.createdAt)).format(
+                        "H:mm ngày DD/MM/YYYY"
+                      )}
+                    </td>
+                    <td className="py-4 px-6">
+                      {dayjs(dayjs(item.updatedAt)).format(
+                        "H:mm ngày DD/MM/YYYY"
+                      )}
+                    </td>
+                    <td className="py-4 px-6">
+                      <div
+                        className={`w-fit mx-auto p-2 rounded-lg
+                            ${
+                              item.status === "ACCEPTED"
+                                ? "bg-green-300"
+                                : item.status === "REJECTED"
+                                ? "bg-red-300"
+                                : ""
+                            }`}
+                      >
+                        <select
+                          className={`px-4 py-2 text-blue-800 rounded-xl w-fit`}
+                          defaultValue={item.status}
+                          onChange={(event) =>
+                            changeStatus(event.target.value, item)
+                          }
+                        >
+                          <option value="PENDING">PENDING</option>
+                          <option value="ACCEPTED">ACCEPTED</option>
+                          <option value="REJECTED">REJECTED</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <span className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
+                  <Box className="my-4" size={96} strokeWidth={1} />
+                  <p className="text-2xl text-slate-400">Trống</p>
+                </span>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-    {/* Table */}
-    <div className="overflow-x-auto relative">
-      <table className="w-full text-sm text-left text-gray-500">
-        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-          <tr>
-            <th scope="col" className="py-3 px-6">
-              Item ID
-            </th>
-            <th scope="col" className="py-3 px-6">
-              Product ID
-            </th>
-            <th scope="col" className="py-3 px-6">
-              Tên sản phẩm
-            </th>
-            <th scope="col" className="py-3 px-6">
-              Tổng mặt hàng tốt
-            </th>
-            <th scope="col" className="py-3 px-6">
-              Tổng mặt hàng xấu
-            </th>
-            <th scope="col" className="py-3 px-6">
-              Tổng mặt hàng
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="bg-white border-b" 
-          >
-            <th
-              scope="row"
-              className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
-            >
-              {product.itemId}
-            </th>
-            <td className="py-4 px-6">{product.productId}</td>
-            <td className="py-4 px-6">{product.productName}</td>
-            <td className="py-4 px-6">
-              <input type="number" min={0} max={product.goodQuantity} value={goodQuantity} onChange={(event) => updateGoodProduct(event.target.value)}
-                className="bg-gray-50 border p-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full"
-              />
-            </td>
-            <td className="py-4 px-6">
-              <input type="number" min={0} max={product.goodQuantity + product.badQuantity} value={badQuantity} onChange={(event) => updateBadProduct(event.target.value)}
-                className="bg-gray-50 border p-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full"
-              />
-            </td>
-            <td className="py-4 px-6">{product.goodQuantity + product.badQuantity}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div className="flex justify-center">
-        <button className="text-white bg-gray-800 hover:bg-gray-900 font-medium rounded-lg px-5 py-2.5 text-lg mt-4"
-          onClick={() => update()}
-        >
-          Chỉnh sửa thông tin sản phẩm
-        </button>
+      <div className="modal">
+        {showModal.open ? (
+          <>
+            <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+              <div className="relative w-auto my-6 mx-auto max-w-3xl">
+                {/*content*/}
+                <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+                  {/*header*/}
+                  <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
+                    <h3 className="text-3xl font-semibold">{showModal.title}</h3>
+                    <button
+                      className="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
+                      onClick={() => setShowModal(showModal.open = false)}
+                    >
+                      <span className="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
+                        ×
+                      </span>
+                    </button>
+                  </div>
+                  {/*body*/}
+                  <div className="relative p-6 flex-auto">
+                    <p className="my-4 text-slate-500 text-lg leading-relaxed">
+                      {showModal.content}
+                    </p>
+                  </div>
+                  {/*footer*/}
+                  <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
+                    <button
+                      className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      type="button"
+                      onClick={() => setShowModal(false)}
+                    >
+                      Close
+                    </button>
+                    {/* <button
+                      className="bg-emerald-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      type="button"
+                      onClick={() => setShowModal(false)}
+                    >
+                      Save Changes
+                    </button> */}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
+          </>
+        ) : null}
       </div>
-    </div>
-  </div>
+    </div> // end
   );
-}
+};
 
 export default Product;
