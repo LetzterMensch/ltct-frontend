@@ -8,6 +8,8 @@ import { DetailBillView } from "./views/DetailBillView";
 import ExportView from "./views/ExportView";
 import HistoryUpdate from "./views/HistoryUpdate";
 import ImportView from "./views/ImportView";
+import Product from "./views/Product";
+import Products from "./views/Products";
 import { WorstSeller } from "./views/WorstSeller";
 
 const router = createBrowserRouter([
@@ -38,7 +40,7 @@ const router = createBrowserRouter([
         element: <ExportView />,
       },
       {
-        path: "/detail",
+        path: "/detail/:id",
         element: <DetailBillView />,
       },
       {
@@ -52,6 +54,14 @@ const router = createBrowserRouter([
       {
         path: "/history-update",
         element: <HistoryUpdate />,
+      },
+      {
+        path: "/products",
+        element: <Products />
+      },
+      {
+        path: "/product/:id",
+        element: <Product />
       },
     ],
   },

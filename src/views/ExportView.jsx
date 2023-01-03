@@ -1,24 +1,44 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { client } from "../services/axios.js";
+
+const fake = [
+  {
+    "historyId" : 1,
+    "createdAt" :  "2012-10-15T21:26:17Z",
+    "status": "REJECTED",
+    "packingStatus": "PENDING"
+  }
+]
 
 function ExportView() {
   const [listBill, setListBill] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    var list = [];
     async function getList() {
-      list = await client.get("/request/export");
-      setListBill(list.data);
+      // list = await client.get("/request/export");
+      // setListBill(list.data);
     }
     getList();
+    if (listBill.length == 0) setListBill(fake);
   }, []);
-  console.log(listBill);
 
   function viewDetail(bill_id) {
-    const link = use
+    const detailId = bill_id ? 1 : 1;
+    navigate(`/detail/${detailId}`);
     console.log(bill_id);
-npm   }
+  }
+
+  function changeStatus(event) {
+    console.log("Status: ", event.target.value);
+    // Cập nhật dữ liệu ở bên back end
+  }
+
+  function changePackingStatus(event) {
+    console.log("PackingStatus: " + event.target.value);
+    // Cập nhật dữ liệu ở bên backend
+  }
 
   return (
     <div>
@@ -83,25 +103,28 @@ npm   }
           <tbody>
             {listBill.map((item, index) => (
               <tr className="bg-white border-b hover:cursor-pointer" key={index} 
-                onClick={() => viewDetail(item.historyId)}
               >
                 <th
                   scope="row"
                   className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
+                  onClick={() => viewDetail(item.historyId)}
                 >
                   {item.historyId}
                 </th>
                 <td className="py-4 px-6">{item.createdAt}</td>
                 <td className="py-4 px-6">2</td>
                 <td className="py-4 px-6">
-                  <div className="px-4 py-2 text-blue-800 rounded-xl bg-yellow-300 w-fit">
-                    {item.status}
-                  </div>
+                  <select className="px-4 py-2 text-blue-800 rounded-xl w-fit" defaultValue={item.status} onChange={(event) => changeStatus(event)}>
+                    <option value="PENDING">PENDING</option>
+                    <option value="ACCEPTED">ACCEPTED</option>
+                    <option value="REJECTED">REJECTED</option>
+                  </select>
                 </td>
                 <td className="py-4 px-6">
-                  <div className="px-4 py-2 text-green-800 font-semibold rounded-xl bg-green-400 w-fit">
-                    {!item.packingStatus && "PENDING"}
-                  </div>
+                  <select className="px-4 py-2 text-blue-800 rounded-xl w-fit" defaultValue={item.packingStatus} onChange={(event) => changePackingStatus(event)}>
+                    <option value="PENDING">PENDING</option>
+                    <option value="DONE">DONE</option>
+                  </select>
                 </td>
               </tr>
             ))}
