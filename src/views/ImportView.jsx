@@ -1,81 +1,139 @@
-import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import calendar from "dayjs/plugin/calendar";
-import "dayjs/locale/vi";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Box } from "tabler-icons-react";
+import { Spinner } from "../components";
 import { client } from "../services/axios";
 
-dayjs.locale("vi");
-dayjs.extend(calendar);
+const ImportView = () => {
+  const navigate = useNavigate();
 
-function ImportView() {
-  const [defaultData, setData] = useState([]);
-  useEffect(() => {
-    async function getData() {
-      const defaultData = await client.get('/import');
-      setData(defaultData.data);
-      console.log(defaultData.data);
+  const [data, setData] = useState();
+  const [error, setError] = useState();
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await client.get(`/import`);
+      setData(data.data);
+    } catch (error) {
+      console.log(error);
+      setError(error);
+    } finally {
+      setLoading(false);
     }
-    getData();
+  };
+
+  useEffect(() => {
+    fetchData();
+    console.log("Hello");
   }, []);
 
-  return (
-    <div className="p-8">
+  function viewDetailItem (arg) {
+    // navigate to view detail item
+    navigate(`/detail/${arg}`)
+  }
+
+  function changeStatus(status, item) {
+    console.log(status, item);
+    async function doAction() {
+      const res = await client.patch(`/import/${item.historyId}`, {
+        status: status
+      })
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+    doAction();
+  }
+
+  return loading ? (
+    <div className="flex h-full justify-center items-center">
+      <Spinner />
+    </div>
+  ) : error ? (
+    <div className="flex h-full justify-center items-center">
+      <p className="text-4xl">😢 Có lỗi xảy ra khi lấy dữ liệu</p>
+    </div>
+  ) : (
+    <div className="p-4">
       <div className="bg-white flex flex-col rounded-lg p-4">
-        <h2 className="text-center font-medium mb-4">
-          Danh sách các đơn nhập đã thực hiện
-        </h2>
+        <div className="text-center text-4xl py-4 font-bold">Nhập Kho</div>
+        {/* Table */}
         <div className="overflow-x-auto relative">
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th scope="col" className="py-3 px-6">
-                Id
-              </th>
-              <th scope="col" className="py-3 px-6">
-                Ngày lập đơn
-              </th>
-              <th scope="col" className="py-3 px-6">
-                Tổng mặt hàng
-              </th>
-              <th scope="col" className="py-3 px-6">
-                Trạng thái
-              </th>
-              <th scope="col" className="py-3 px-6">
-                Tình trạng đóng gói
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {defaultData.map((item, index) => (
-              <tr className="bg-white border-b hover:cursor-pointer" key={index} 
-                onClick={() => viewDetail(item.historyId)}
-              >
-                <th
-                  scope="row"
-                  className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
-                >
-                  {item.historyId}
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th scope="col" className="py-3 px-6">
+                  Mã
                 </th>
-                <td className="py-4 px-6">{item.createdAt}</td>
-                <td className="py-4 px-6">2</td>
-                <td className="py-4 px-6">
-                  <div className="px-4 py-2 text-blue-800 rounded-xl bg-yellow-300 w-fit">
-                    {item.status}
-                  </div>
-                </td>
-                <td className="py-4 px-6">
-                  <div className="px-4 py-2 text-green-800 font-semibold rounded-xl bg-green-400 w-fit">
-                    {!item.packingStatus && "PENDING"}
-                  </div>
-                </td>
+                <th scope="col" className="py-3 px-6">
+                  Ngày lập đơn
+                </th>
+                <th scope="col" className="py-3 px-6">
+                  Ngày duyệt đơn
+                </th>
+                <th scope="col" className="py-3 px-6">
+                  Trạng thái
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {data.length !== 0 ? (
+                data.map((item, index) => (
+                  <tr
+                    className="bg-white border-b"
+                    key={index}
+                  >
+                    <th
+                      scope="row"
+                      className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
+                      onClick={() => viewDetailItem(item.historyId)}
+                    >
+                      {item.historyId}
+                    </th>
+                    <td className="py-4 px-6">
+                      {dayjs(dayjs(item.createdAt)).format("H:mm ngày DD/MM/YYYY")}
+                    </td>
+                    <td className="py-4 px-6">
+                      {dayjs(dayjs(item.updatedAt)).format("H:mm ngày DD/MM/YYYY")}
+                    </td>
+                    <td className="py-4 px-6">
+                      <div
+                        className={`w-fit mx-auto p-2 rounded-lg
+                            ${
+                              item.status === "ACCEPTED"
+                                ? "bg-green-300"
+                                : item.status === "REJECTED" 
+                                ? "bg-red-300"
+                                : ""
+                            }`}
+                      >
+                        <select className={`px-4 py-2 text-blue-800 rounded-xl w-fit`} defaultValue={item.status} onChange={(event) => changeStatus(event.target.value, item)}>
+                          <option value="PENDING">PENDING</option>
+                          <option value="ACCEPTED">ACCEPTED</option>
+                          <option value="REJECTED">REJECTED</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <span className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
+                  <Box className="my-4" size={96} strokeWidth={1} />
+                  <p className="text-2xl text-slate-400">Trống</p>
+                </span>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default ImportView;
