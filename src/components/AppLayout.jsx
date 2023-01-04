@@ -50,7 +50,7 @@ function AppLayout() {
   ];
   return (
     <div className="h-screen w-screen flex flex-row">
-      <div className="h-full bg-slate-800 min-w-[240px] px-4">
+      <div className="h-full sticky bg-slate-800 min-w-[240px] px-4">
         <Link
           to="/"
           className="text-green-500 flex gap-1 flex-row items-center m-4 cursor-pointer select-none"
@@ -82,7 +82,7 @@ function AppLayout() {
             <User />
           </span>
         </div>
-        <div className={"bg-slate-100 flex-1"}>
+        <div className={"bg-slate-100 flex-1 overflow-y-scroll"}>
           <Outlet />
         </div>
       </div>
