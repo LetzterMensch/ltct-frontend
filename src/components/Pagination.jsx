@@ -22,9 +22,9 @@ function Pagination({ page, setPage, maxPages }) {
   rightSide = rightSide > maxPages ? maxPages : rightSide;
   // for (let number = leftSide; number <= r)
   let active =
-    "bg-orange-500 text-white flex items-center justify-center cursor-pointer text-base text-center p-5 h-5 w-5 shadow-lg bg-white m-1 rounded-full";
+    "flex items-center justify-center bg-slate-700 border-2 border-slate-700 text-slate-50 h-10 w-10 cursor-pointer mx-1";
   let noActive =
-    "flex items-center justify-center text-orange-500 cursor-pointer text-base text-center p-5 h-5 w-5 shadow-lg bg-white m-1 rounded-full";
+    "flex items-center justify-center bg-slate-50 border-2 border-slate-700 text-slate-900 h-10 w-10 cursor-pointer mx-1 hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-300";
   for (let number = leftSide; number <= rightSide; number++) {
     items.push(
       <div
@@ -63,31 +63,35 @@ function Pagination({ page, setPage, maxPages }) {
   return (
     <div>
       <div className="flex justify-center items-center ">
-        <div
-          className="flex items-center justify-center text-orange-500 cursor-pointer text-xl text-center p-5 h-5 w-5 shadow-lg bg-white m-1 rounded-full"
+        <button
+          className="flex items-center justify-center bg-slate-50 border-2 border-slate-700 text-slate-900 h-10 w-10 cursor-pointer mx-1 hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={currentPage === 1}
           onClick={firstPage}
         >
           &lsaquo;&lsaquo;
-        </div>
-        <div
-          className="flex items-center justify-center text-orange-500 cursor-pointer text-xl text-center p-5 h-5 w-5 shadow-lg bg-white m-1 rounded-full"
+        </button>
+        <button
+          className="flex items-center justify-center bg-slate-50 border-2 border-slate-700 text-slate-900 h-10 w-10 cursor-pointer mx-1 hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={currentPage === 1}
           onClick={prevPage}
         >
           &lsaquo;
-        </div>
+        </button>
         <div className="flex items-center justify-center">{items}</div>
-        <div
-          className="flex items-center justify-center text-orange-500 cursor-pointer text-xl text-center p-5 h-5 w-5 shadow-lg bg-white m-1 rounded-full"
+        <button
+          className="flex items-center justify-center bg-slate-50 border-2 border-slate-700 text-slate-900 h-10 w-10 cursor-pointer mx-1 hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={currentPage === maxPages}
           onClick={nextPage}
         >
           &rsaquo;
-        </div>
-        <div
-          className="flex items-center justify-center text-orange-500 cursor-pointer text-xl text-center p-5 h-5 w-5 shadow-lg bg-white m-1 rounded-full"
+        </button>
+        <button
+          className="flex items-center justify-center bg-slate-50 border-2 border-slate-700 text-slate-900 h-10 w-10 cursor-pointer mx-1 hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={currentPage === maxPages}
           onClick={lastPage}
         >
           &rsaquo;&rsaquo;
-        </div>
+        </button>
       </div>
     </div>
   );
