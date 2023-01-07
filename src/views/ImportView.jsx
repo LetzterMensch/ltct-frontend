@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box } from "tabler-icons-react";
-import { Spinner } from "../components";
+import { Pagination, Spinner } from "../components";
 import { client } from "../services/axios";
 
 const ImportView = () => {
@@ -11,17 +11,25 @@ const ImportView = () => {
   const [data, setData] = useState();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(true);
+
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [maxPages, setMaxPages] = useState();
+
   const [showModal, setShowModal] = useState({
     open: false,
     title: "title",
-    content: "content"
+    content: "content",
   });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get(`/import`);
-      setData(data.data);
+      const { count, data } = await (
+        await client.get(`/import?status=${status}&offset=${(page - 1) * 10}`)
+      ).data;
+      setData(data);
+      setMaxPages(Math.ceil(count / 10));
     } catch (error) {
       console.log(error);
       setError(error);
@@ -32,8 +40,8 @@ const ImportView = () => {
 
   useEffect(() => {
     fetchData();
-    console.log("Hello");
-  }, []);
+    return () => {};
+  }, [page, status]);
 
   function viewDetailItem(arg) {
     // navigate to view detail item
@@ -51,15 +59,15 @@ const ImportView = () => {
           console.log(response);
           if (response.data.message !== "Success") {
             setShowModal({
-              open : true,
+              open: true,
               title: "Can't set Status",
-              content: response.data.message
+              content: response.data.message,
             });
           } else {
             setShowModal({
-              open : true,
+              open: true,
               title: "Set Status Done",
-              content: response.data.message
+              content: response.data.message,
             });
           }
         })
@@ -157,6 +165,9 @@ const ImportView = () => {
             </tbody>
           </table>
         </div>
+        <div className="mt-4">
+          <Pagination page={page} setPage={setPage} maxPages={maxPages} />
+        </div>
       </div>
       <div className="modal">
         {showModal.open ? (
@@ -167,10 +178,12 @@ const ImportView = () => {
                 <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
                   {/*header*/}
                   <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
-                    <h3 className="text-3xl font-semibold">{showModal.title}</h3>
+                    <h3 className="text-3xl font-semibold">
+                      {showModal.title}
+                    </h3>
                     <button
                       className="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                      onClick={() => setShowModal(showModal.open = false)}
+                      onClick={() => setShowModal((showModal.open = false))}
                     >
                       <span className="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
                         ×
