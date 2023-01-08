@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
+  ArrowLeft,
   BuildingWarehouse,
   Dashboard,
   List,
@@ -77,6 +78,10 @@ function AppLayout() {
       </div>
       <div className="flex-1 min-h-full flex flex-col">
         <div className="flex flex-row items-center h-16 px-4 bg-slate-800">
+          <Link className="flex items-center gap-1 text-slate-300" to={-1}>
+            <ArrowLeft />
+            Quay lại
+          </Link>
           <span className="flex-1" />
           <span className="bg-green-500 rounded-full h-10 w-10 flex items-center justify-center">
             <User />

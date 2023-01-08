@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-// truyền tham số changePage để thay đổi state ở cha
-
 /**
  *
  * @param {object} props
