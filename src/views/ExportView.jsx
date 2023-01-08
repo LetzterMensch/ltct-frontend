@@ -10,6 +10,7 @@ const ExportView = () => {
   const [loading, setLoading] = useState(true);
 
   const [status, setStatus] = useState("");
+  const [packingStatus, setPackingStatus] = useState("");
   const [page, setPage] = useState(1);
   const [maxPages, setMaxPages] = useState();
 
@@ -17,7 +18,11 @@ const ExportView = () => {
     setLoading(true);
     try {
       const { count, data } = await (
-        await client.get(`/export?status=${status}&offset=${(page - 1) * 10}`)
+        await client.get(
+          `/export?status=${status}&packingStatus=${packingStatus}&offset=${
+            (page - 1) * 10
+          }`
+        )
       ).data;
       console.log(data);
       setData(data);
@@ -39,7 +44,7 @@ const ExportView = () => {
       const arr = data.map((item) => {
         if (item.historyId === historyId) {
           item.status = status;
-          item.packingStatus = status === "ACCEPT" ? "PENDING" : null;
+          item.packingStatus = status === "ACCEPTED" ? "PENDING" : null;
         }
         return item;
       });
@@ -73,7 +78,7 @@ const ExportView = () => {
 
   useEffect(() => {
     fetchData();
-  }, [page, status]);
+  }, [page, status, packingStatus]);
 
   return loading ? (
     <div className="flex h-full justify-center items-center">
@@ -86,23 +91,42 @@ const ExportView = () => {
   ) : (
     <div className="p-8">
       <div className="bg-white flex flex-col rounded-lg p-4">
-        <div className="mb-4">
-          <label htmlFor="">Trạng thái: </label>
-          <select
-            className="bg-slate-50 border border-slate-300 px-4 py-3 appearance-none focus:outline-none"
-            name="status"
-            id=""
-            value={status}
-            onChange={(e) => setStatus(e.currentTarget.value)}
-          >
-            <option value="" defaultChecked>
-              Tất cả
-            </option>
-            <option value="ACCEPTED">Đồng ý</option>
-            <option value="PENDING">Chờ xử lý</option>
-            <option value="REJECTED">Từ chối</option>
-          </select>
+        <div className="flex flex-row w-full justify-between mb-4">
+          <div>
+            <label htmlFor="">Trạng thái: </label>
+            <select
+              className="bg-slate-50 border border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+              name="status"
+              id=""
+              value={status}
+              onChange={(e) => setStatus(e.currentTarget.value)}
+            >
+              <option value="" defaultChecked>
+                Tất cả
+              </option>
+              <option value="ACCEPTED">Đồng ý</option>
+              <option value="PENDING">Chờ xử lý</option>
+              <option value="REJECTED">Từ chối</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="">Trạng thái đóng gói: </label>
+            <select
+              className="bg-slate-50 border border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+              name="packingStatus"
+              id=""
+              value={packingStatus}
+              onChange={(e) => setPackingStatus(e.currentTarget.value)}
+            >
+              <option value="" defaultChecked>
+                Tất cả
+              </option>
+              <option value="DONE">Hoàn thành</option>
+              <option value="PENDING">Đang đóng gói</option>
+            </select>
+          </div>
         </div>
+
         <div className="text-center text-4xl py-4 font-bold">Xuất Kho</div>
         {/* Table */}
         <div className="overflow-x-auto relative">
