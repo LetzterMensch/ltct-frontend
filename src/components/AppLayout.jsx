@@ -43,11 +43,11 @@ function AppLayout() {
       icon: <PackgeExport />,
       label: "Hàng bán ế",
     },
-    {
-      key: "/history-update",
-      icon: <PackgeExport />,
-      label: "Lịch sử cập nhật",
-    },
+    // {
+    //   key: "/history-update",
+    //   icon: <PackgeExport />,
+    //   label: "Lịch sử cập nhật",
+    // },
   ];
   return (
     <div className="h-screen w-screen flex flex-row">
