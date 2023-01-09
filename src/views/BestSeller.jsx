@@ -36,7 +36,7 @@ export const BestSeller = () => {
 
   function viewDetailItem(arg) {
     // navigate to view detail item
-    navigate(`/detail/${arg}`);
+    navigate(`/product/${arg}`);
   }
 
   return loading ? (
@@ -83,7 +83,7 @@ export const BestSeller = () => {
                       <th
                         scope="row"
                         className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
-                        onClick={() => viewDetailItem(item.historyId)}
+                        onClick={() => viewDetailItem(item.itemId)}
                       >
                         {index + 1}
                       </th>

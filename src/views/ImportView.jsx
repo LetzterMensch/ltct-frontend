@@ -69,7 +69,7 @@ const ImportView = () => {
         <div className="mb-4">
           <label htmlFor="">Trạng thái: </label>
           <select
-            className="bg-slate-50 border border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+            className="bg-slate-50 border rounded-lg border-slate-300 px-4 py-3 appearance-none focus:outline-none"
             name="status"
             id=""
             value={status}

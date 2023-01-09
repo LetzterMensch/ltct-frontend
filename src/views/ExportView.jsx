@@ -95,7 +95,7 @@ const ExportView = () => {
           <div>
             <label htmlFor="">Trạng thái: </label>
             <select
-              className="bg-slate-50 border border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+              className="bg-slate-50 border rounded-lg border-slate-300 px-4 py-3 appearance-none focus:outline-none"
               name="status"
               id=""
               value={status}
@@ -112,7 +112,7 @@ const ExportView = () => {
           <div>
             <label htmlFor="">Trạng thái đóng gói: </label>
             <select
-              className="bg-slate-50 border border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+              className="bg-slate-50 border rounded-lg border-slate-300 px-4 py-3 appearance-none focus:outline-none"
               name="packingStatus"
               id=""
               value={packingStatus}
@@ -224,7 +224,7 @@ const ExportView = () => {
                             onClick={() =>
                               handleExport("REJECTED", item.historyId)
                             }
-                            className={`p-2 rounded-lg bg-red-300 text-black`}
+                            className={`p-2 rounded-lg bg-red-300 text-black mt-2`}
                           >
                             Từ chối
                           </button>
@@ -233,7 +233,7 @@ const ExportView = () => {
                       {item.packingStatus === "PENDING" && (
                         <button
                           onClick={() => handlePacking(item.historyId)}
-                          className={`p-2 rounded-lg bg-green-300 text-black mr-2`}
+                          className={`p-2 rounded-lg bg-green-300 text-black mr-2 mt-4`}
                         >
                           Hoàn thành đóng gói
                         </button>

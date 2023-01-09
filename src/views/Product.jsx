@@ -8,9 +8,9 @@ import { client } from "../services/axios";
 const Product = () => {
   const navigate = useNavigate();
 
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
   const [error, setError] = useState();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState({
     open: false,
     title: "title",
