@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
+  ArrowLeft,
   BuildingWarehouse,
   Dashboard,
   List,
@@ -42,18 +43,18 @@ function AppLayout() {
       icon: <PackgeExport />,
       label: "Hàng bán ế",
     },
-    {
-      key: "/history-update",
-      icon: <PackgeExport />,
-      label: "Lịch sử cập nhật",
-    },
+    // {
+    //   key: "/history-update",
+    //   icon: <PackgeExport />,
+    //   label: "Lịch sử cập nhật",
+    // },
   ];
   return (
     <div className="h-screen w-screen flex flex-row">
-      <div className="h-full sticky bg-slate-800 min-w-[240px] px-4">
+      <div className="h-full sticky bg-slate-900 min-w-[240px] px-4">
         <Link
           to="/"
-          className="text-green-500 flex gap-1 flex-row items-center m-4 cursor-pointer select-none"
+          className="text-slate-200 flex gap-1 flex-row items-center m-4 cursor-pointer select-none"
         >
           <BuildingWarehouse className="h-8 w-8 flex items-center justify-center" />
           <p className="text-2xl flex-1 text-center font-semibold">Warehouse</p>
@@ -63,10 +64,10 @@ function AppLayout() {
             <Link
               to={item.key}
               key={item.key}
-              className={`flex flex-row px-2 py-3 gap-2 uppercase  hover:text-white rounded-lg ${
+              className={`flex flex-row px-2 py-3 gap-2 uppercase rounded-lg ${
                 pathname === item.key
-                  ? "text-white bg-green-500"
-                  : "text-slate-400"
+                  ? "text-slate-900 bg-slate-100"
+                  : "text-slate-300 hover:text-slate-50"
               }`}
             >
               {item.icon}
@@ -76,9 +77,16 @@ function AppLayout() {
         </div>
       </div>
       <div className="flex-1 min-h-full flex flex-col">
-        <div className="flex flex-row items-center h-16 px-4 bg-slate-800">
+        <div className="flex flex-row items-center h-16 px-4 bg-slate-900">
+          <Link
+            className="flex items-center gap-1 text-slate-200 hover:text-slate-50"
+            to={-1}
+          >
+            <ArrowLeft />
+            Quay lại
+          </Link>
           <span className="flex-1" />
-          <span className="bg-green-500 rounded-full h-10 w-10 flex items-center justify-center">
+          <span className="bg-slate-50 rounded-full h-10 w-10 flex items-center justify-center">
             <User />
           </span>
         </div>

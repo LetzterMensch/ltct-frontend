@@ -29,7 +29,7 @@ export const WorstSeller = () => {
 
   useEffect(() => {
     fetchData();
-    console.log("Hello");
+    console.log(data);
   }, []);
 
   function viewDetailItem(arg) {
@@ -78,7 +78,7 @@ export const WorstSeller = () => {
                       <th
                         scope="row"
                         className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
-                        onClick={() => viewDetailItem(item.historyId)}
+                        onClick={() => viewDetailItem(item.itemId)}
                       >
                         {index + 1}
                       </th>

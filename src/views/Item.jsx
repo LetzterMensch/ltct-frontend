@@ -1,53 +1,32 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "tabler-icons-react";
 import { Spinner } from "../components";
 import { client } from "../services/axios";
 
-const Products = () => {
+const Item = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const itemId = location.pathname.split("/")[2];
+
   const [data, setData] = useState([]);
+  const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [change, setChange] = useState(false);
+
+  const [changeNumber, setNumber] = useState(0);
   const [showModal, setShowModal] = useState({
     open: false,
-    title: "title",
+    title: "Thông báo",
     content: "content"
-  });
+  }); 
 
-  const list = [{
-    "itemId": 1,
-    "productId": 2,
-    "productName": "Iphone 12",
-    "goodQuantity": 12,
-    "badQuantity" : 11,
-  }];
-
-  function viewDetail(id) {
-    console.log(id);
-    navigate('/product/' + id);
-  }
-
-  const fetchData = async () => {
+  const fetchData = async (id) => {
     setLoading(true);
     try {
-      let listProduct = await (await axios.get('https://p01-product-api-production.up.railway.app/api/user/products')).data;
-      let showList = [];
-      if (listProduct.data?.length > 0){
-        await Promise.all(listProduct.data.map(async (item, index) => {
-          let product = await client.get('/product/' + item.id);
-          showList.push(product.data);
-        }));
-        console.log(showList);
-        setData(showList);
-      }
-      // listProduct.data?.map(() => {
-      //   let list
-      // });
-      // const data = await client.get(`/product/quantity/${id}`);
-      // console.log(data.data);
-      // return (data.data);
+      const data = await client.get(`/product/item/${id}`);
+      console.log(data.data);
+      setData(data.data);
     } catch (error) {
       console.log(error);
       setError(error);
@@ -56,9 +35,27 @@ const Products = () => {
     }
   };
 
+  async function updateItem() {
+    console.log(changeNumber);
+    if (changeNumber > data.quantity || changeNumber < 0) {
+      setNumber(0);
+      setShowModal({...showModal, open: true, content: "Số lượng không hợp lệ"});
+      return;
+    } 
+
+    const res = await client.patch(`/product/item/${itemId}`, {
+      quantity: changeNumber
+    }).catch(function (error) {
+      console.log(error);
+    });
+    console.log(res);
+    setNumber(0);
+    setChange(!change);
+  }
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(itemId);
+  }, [change]);
 
   return loading ? (
     <div className="flex h-full justify-center items-center">
@@ -71,54 +68,58 @@ const Products = () => {
   ) : (
     <div className="p-4">
       <div className="bg-white flex flex-col rounded-lg p-4">
-        <div className="text-center text-4xl py-4 font-bold">Các mặt hàng trong kho</div>
+        <div className="text-center text-4xl py-4 font-bold">
+          Thông tin của mặt hàng ID: {itemId}
+        </div>
         {/* Table */}
         <div className="overflow-x-auto relative">
           <table className="w-full text-sm text-left text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
                 <th scope="col" className="py-3 px-6">
+                  Mã mặt hàng
+                </th>
+                <th scope="col" className="py-3 px-6">
                   Mã sản phẩm
-                </th>
-                <th scope="col" className="py-3 px-6">
-                  Tên sản phẩm
-                </th>
-                <th scope="col" className="py-3 px-6">
-                  Miêu tả
                 </th>
                 <th scope="col" className="py-3 px-6">
                   Số mặt hàng
                 </th>
                 <th scope="col" className="py-3 px-6">
-                  Số loại mặt hàng
+                  Số hàng kém
+                </th>
+                <th scope="col" className="py-3 px-6">
+                  Tăng số lượng kém
                 </th>
               </tr>
             </thead>
             <tbody>
-              {data?.length !== 0 ? (
-                data?.map((item, index) => (
-                  <tr className="bg-white border-b" key={item.id}>
-                    <th
-                      scope="row"
-                      className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
-                      onClick={() => viewDetail(item.id)}
+              {data ? (
+                <tr className="bg-white border-b">
+                  <th
+                    scope="row"
+                    className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
+                  >
+                    {data.id}
+                  </th>
+                  <td className="py-4 px-6">{data.productId}</td>
+                  <td className="py-4 px-6">{data.quantity}</td>
+                  <td className="py-4 px-6">{data.badQuantity}</td>
+                  <td className="py-4 px-6">
+                    <input type="number" name="" id="" placeholder="Số lượng"
+                      min={0} max={data.quantity}
+                      value={changeNumber}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline mb-2"
+                      onChange={(e) => setNumber(e.target.value)}
+                    />
+                    <button
+                        className={`p-2 rounded-lg bg-green-300 text-black mr-2`}
+                        onClick={() => updateItem()}
                     >
-                      {item.id}
-                    </th>
-                    <td className="py-4 px-6">
-                      {item.name}
-                    </td>
-                    <td className="py-4 px-6">
-                      {item.description}
-                    </td>
-                    <td className="py-4 px-6">
-                      {item.quantity ?? 0}
-                    </td>
-                    <td className="py-4 px-6">
-                      {item.sub_products?.length}
-                    </td>
-                  </tr>
-                ))
+                        Sửa
+                    </button>
+                  </td>
+                </tr>
               ) : (
                 <span className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
                   <Box className="my-4" size={96} strokeWidth={1} />
@@ -159,7 +160,7 @@ const Products = () => {
                     <button
                       className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                       type="button"
-                      onClick={() => setShowModal(false)}
+                      onClick={() => setShowModal({...showModal, open: false})}
                     >
                       Close
                     </button>
@@ -180,6 +181,6 @@ const Products = () => {
       </div>
     </div> // end
   );
-}
+};
 
-export default Products;
+export default Item;

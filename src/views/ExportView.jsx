@@ -1,28 +1,32 @@
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Box } from "tabler-icons-react";
-import { Spinner } from "../components";
+import { Link } from "react-router-dom";
+import { Pagination, Spinner } from "../components";
 import { client } from "../services/axios";
 
-const ImportView = () => {
-  const navigate = useNavigate();
-
+const ExportView = () => {
   const [data, setData] = useState();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState({
-    open: false,
-    title: "title",
-    content: "content"
-  });
+
+  const [status, setStatus] = useState("");
+  const [packingStatus, setPackingStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [maxPages, setMaxPages] = useState();
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get(`/export`);
-      console.log(data.data);
-      setData(data.data);
+      const { count, data } = await (
+        await client.get(
+          `/export?status=${status}&packingStatus=${packingStatus}&offset=${
+            (page - 1) * 10
+          }`
+        )
+      ).data;
+      console.log(data);
+      setData(data);
+      setMaxPages(Math.ceil(count / 10));
     } catch (error) {
       console.log(error);
       setError(error);
@@ -31,45 +35,50 @@ const ImportView = () => {
     }
   };
 
+  const handleExport = async (status, historyId) => {
+    setLoading(true);
+    try {
+      await client.patch(`/export/${historyId}`, {
+        status,
+      });
+      const arr = data.map((item) => {
+        if (item.historyId === historyId) {
+          item.status = status;
+          item.packingStatus = status === "ACCEPTED" ? "PENDING" : null;
+        }
+        return item;
+      });
+      setData(arr);
+    } catch (error) {
+      console.log(error.message);
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePacking = async (historyId) => {
+    setLoading(true);
+    try {
+      await client.post(`/export/${historyId}`);
+      const arr = data.map((item) => {
+        if (item.historyId === historyId) {
+          item.packingStatus = "DONE";
+        }
+        return item;
+      });
+      setData(arr);
+    } catch (error) {
+      console.log(error.message);
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
-    console.log("Hello");
-  }, []);
-
-  function viewDetailItem (arg) {
-    // navigate to view detail item
-    navigate(`/detail/${arg}`)
-  }
-
-  function changeStatus(status, item) {
-    console.log(status, item);
-    async function doAction() {
-      const res = await client
-        .patch(`/import/${item.historyId}`, {
-          status: status,
-        })
-        .then(function (response) {
-          console.log(response);
-          if (response.data.message !== "Success") {
-            setShowModal({
-              open : true,
-              title: "Can't set Status",
-              content: response.data.message
-            });
-          } else {
-            setShowModal({
-              open : true,
-              title: "Set Status Done",
-              content: response.data.message
-            });
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    }
-    doAction();
-  }
+  }, [page, status, packingStatus]);
 
   return loading ? (
     <div className="flex h-full justify-center items-center">
@@ -80,139 +89,179 @@ const ImportView = () => {
       <p className="text-4xl">😢 Có lỗi xảy ra khi lấy dữ liệu</p>
     </div>
   ) : (
-    <div className="p-4">
+    <div className="p-8">
       <div className="bg-white flex flex-col rounded-lg p-4">
+        <div className="flex flex-row w-full justify-between mb-4">
+          <div>
+            <label htmlFor="">Trạng thái: </label>
+            <select
+              className="bg-slate-50 border rounded-lg border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+              name="status"
+              id=""
+              value={status}
+              onChange={(e) => setStatus(e.currentTarget.value)}
+            >
+              <option value="" defaultChecked>
+                Tất cả
+              </option>
+              <option value="ACCEPTED">Đồng ý</option>
+              <option value="PENDING">Chờ xử lý</option>
+              <option value="REJECTED">Từ chối</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="">Trạng thái đóng gói: </label>
+            <select
+              className="bg-slate-50 border rounded-lg border-slate-300 px-4 py-3 appearance-none focus:outline-none"
+              name="packingStatus"
+              id=""
+              value={packingStatus}
+              onChange={(e) => setPackingStatus(e.currentTarget.value)}
+            >
+              <option value="" defaultChecked>
+                Tất cả
+              </option>
+              <option value="DONE">Hoàn thành</option>
+              <option value="PENDING">Đang đóng gói</option>
+            </select>
+          </div>
+        </div>
+
         <div className="text-center text-4xl py-4 font-bold">Xuất Kho</div>
         {/* Table */}
         <div className="overflow-x-auto relative">
-          <table className="w-full text-sm text-left text-gray-500">
+          <table className="border-collapse w-full text-sm text-left text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Mã
                 </th>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Ngày lập đơn
                 </th>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Ngày duyệt đơn
                 </th>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Trạng thái
                 </th>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Tình trạng đóng gói
+                </th>
+                <th className="py-3 px-6 text-center border border-slate-300">
+                  Thao tác
                 </th>
               </tr>
             </thead>
             <tbody>
               {data.length !== 0 ? (
                 data.map((item, index) => (
-                  <tr
-                    className="bg-white border-b"
-                    key={index}
-                  >
+                  <tr className="bg-white hover:bg-slate-100" key={index}>
                     <th
                       scope="row"
-                      className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
-                      onClick={() => viewDetailItem(item.historyId)}
+                      className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap border border-slate-300"
                     >
                       {item.historyId}
                     </th>
-                    <td className="py-4 px-6">
-                      {dayjs(dayjs(item.createdAt)).format("H:mm ngày DD/MM/YYYY")}
+                    <td className="py-4 px-6 border border-slate-300">
+                      {dayjs(dayjs(item.createdAt)).format(
+                        "H:mm ngày DD/MM/YYYY"
+                      )}
                     </td>
-                    <td className="py-4 px-6">
-                      {dayjs(dayjs(item.updatedAt)).format("H:mm ngày DD/MM/YYYY")}
+                    <td className="py-4 px-6 border border-slate-300">
+                      {dayjs(dayjs(item.updatedAt)).format(
+                        "H:mm ngày DD/MM/YYYY"
+                      )}
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-6 border border-slate-300">
                       <div
                         className={`w-fit mx-auto p-2 rounded-lg
-                            ${
-                              item.status === "ACCEPTED"
-                                ? "bg-green-300"
-                                : item.status === "REJECTED" 
-                                ? "bg-red-300"
-                                : ""
-                            }`}
+                        ${
+                          item.status === "ACCEPTED"
+                            ? "bg-green-300"
+                            : item.status === "REJECTED"
+                            ? "bg-red-300"
+                            : item.status === "PENDING"
+                            ? "bg-yellow-300"
+                            : ""
+                        }`}
                       >
-                        <select className={`px-4 py-2 text-blue-800 rounded-xl w-fit`} defaultValue={item.status} onChange={(event) => changeStatus(event.target.value, item)}>
-                          <option value="PENDING">PENDING</option>
-                          <option value="ACCEPTED">ACCEPTED</option>
-                          <option value="REJECTED">REJECTED</option>
-                        </select>
+                        {item.status}
                       </div>
                     </td>
-                    <td className="px-4 py-6">
-                    <select className="px-4 py-2 text-blue-800 rounded-xl w-fit" defaultValue={item.packingStatus == null ? "NULL" : item.packingStatus} onChange={(event) => changePackingStatus(event)}>
-                      <option value="PENDING">PENDING</option>
-                      <option value="DONE">DONE</option>
-                      <option value="NULL">NULL</option>
-                    </select>
+                    <td className="py-4 px-6 border border-slate-300">
+                      <div
+                        className={`w-fit mx-auto p-2 rounded-lg
+                        ${
+                          item.packingStatus === "DONE"
+                            ? "bg-green-300"
+                            : item.packingStatus === "PENDING"
+                            ? "bg-yellow-300"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {item.packingStatus || "NULL"}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 border border-slate-300 text-center">
+                      <Link
+                        className={`p-2 rounded-lg bg-blue-300 text-black mr-2`}
+                        to={`/detail/${item.historyId}`}
+                      >
+                        Xem
+                      </Link>
+                      {item.status === "PENDING" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleExport("ACCEPTED", item.historyId)
+                            }
+                            className={`p-2 rounded-lg bg-green-300 text-black mr-2`}
+                          >
+                            Duyệt
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleExport("REJECTED", item.historyId)
+                            }
+                            className={`p-2 rounded-lg bg-red-300 text-black mt-2`}
+                          >
+                            Từ chối
+                          </button>
+                        </>
+                      )}
+                      {item.packingStatus === "PENDING" && (
+                        <button
+                          onClick={() => handlePacking(item.historyId)}
+                          className={`p-2 rounded-lg bg-green-300 text-black mr-2 mt-4`}
+                        >
+                          Hoàn thành đóng gói
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
               ) : (
-                <span className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
-                  <Box className="my-4" size={96} strokeWidth={1} />
-                  <p className="text-2xl text-slate-400">Trống</p>
-                </span>
+                <tr>
+                  <th
+                    colSpan={5}
+                    className="w-full text-slate-300 p-4 border border-slate-300 text-center"
+                  >
+                    <p className="text-2xl text-slate-400 py-10">
+                      Chưa có dữ liệu 😎
+                    </p>
+                  </th>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
-      </div>
-      <div className="modal">
-        {showModal.open ? (
-          <>
-            <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-              <div className="relative w-auto my-6 mx-auto max-w-3xl">
-                {/*content*/}
-                <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-                  {/*header*/}
-                  <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
-                    <h3 className="text-3xl font-semibold">{showModal.title}</h3>
-                    <button
-                      className="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                      onClick={() => setShowModal(showModal.open = false)}
-                    >
-                      <span className="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
-                        ×
-                      </span>
-                    </button>
-                  </div>
-                  {/*body*/}
-                  <div className="relative p-6 flex-auto">
-                    <p className="my-4 text-slate-500 text-lg leading-relaxed">
-                      {showModal.content}
-                    </p>
-                  </div>
-                  {/*footer*/}
-                  <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
-                    <button
-                      className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Close
-                    </button>
-                    {/* <button
-                      className="bg-emerald-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Save Changes
-                    </button> */}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-          </>
-        ) : null}
+        <div className="mt-4">
+          <Pagination page={page} setPage={setPage} maxPages={maxPages} />
+        </div>
       </div>
     </div>
   );
 };
 
-export default ImportView;
+export default ExportView;

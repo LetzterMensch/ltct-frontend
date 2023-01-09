@@ -1,13 +1,11 @@
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Box } from "tabler-icons-react";
+import { useLocation } from "react-router-dom";
 import { Spinner } from "../components";
-import { client } from "../services/axios";
+import { client, clientP01 } from "../services/axios";
 
 export const DetailBillView = () => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const [data, setData] = useState();
   const [error, setError] = useState();
@@ -17,9 +15,24 @@ export const DetailBillView = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get(`/history/${historyId}`);
-      console.log(data.data);
-      setData(data.data);
+      const response = await (await client.get(`/history/${historyId}`)).data;
+      const arr = { ...response };
+      arr.HistoryItem = await Promise.all(
+        response?.HistoryItem?.map(async (item) => {
+          const response = await (
+            await clientP01.get(`/products/${item.item.productId}`)
+          ).data;
+          const responseTwo = await (
+            await clientP01.get(`/sub-products/${item.itemId}`)
+          ).data;
+          item.name = response.data?.name;
+          if (responseTwo.data) {
+            item.subName = `Màu ${responseTwo.data?.color.name} Size ${responseTwo.data?.size.name}`;
+          }
+          return item;
+        })
+      );
+      setData(arr);
     } catch (error) {
       console.log(error);
       setError(error);
@@ -30,13 +43,7 @@ export const DetailBillView = () => {
 
   useEffect(() => {
     fetchData();
-    console.log("Hello");
   }, []);
-
-  function viewDetailItem (itemId) {
-    // navigate to view detail item
-    // 
-  }
 
   return loading ? (
     <div className="flex h-full justify-center items-center">
@@ -83,22 +90,19 @@ export const DetailBillView = () => {
         </h2>
         {/* Table */}
         <div className="overflow-x-auto relative">
-          <table className="w-full text-sm text-left text-gray-500">
+          <table className="border-collapse w-full text-sm text-left text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
-                <th scope="col" className="py-3 px-6">
-                  Mã
+                <th className="py-3 px-6 text-center border border-slate-300">
+                  Tên sản phẩm
                 </th>
-                <th scope="col" className="py-3 px-6">
-                  Mã sản phẩm
+                <th className="py-3 px-6 text-center border border-slate-300">
+                  Tên vật phẩm
                 </th>
-                <th scope="col" className="py-3 px-6">
-                  Mã vật phẩm
-                </th>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Số lượng
                 </th>
-                <th scope="col" className="py-3 px-6">
+                <th className="py-3 px-6 text-center border border-slate-300">
                   Trạng thái hàng
                 </th>
               </tr>
@@ -106,21 +110,17 @@ export const DetailBillView = () => {
             <tbody>
               {data.length !== 0 ? (
                 data.HistoryItem.map((item, index) => (
-                  <tr
-                    className="bg-white border-b"
-                    key={index}
-                  >
-                    <th
-                      scope="row"
-                      className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap hover:cursor-pointer"
-                      onClick={() => viewDetailItem(item.itemId)}
-                    >
-                      {item.historyId}
-                    </th>
-                    <td className="py-4 px-6">{item.item.productId}</td>
-                    <td className="py-4 px-6">{item.itemId}</td>
-                    <td className="py-4 px-6">{item.quantity}</td>
-                    <td className="py-4 px-6">
+                  <tr className="bg-white hover:bg-slate-100" key={index}>
+                    <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap border border-slate-300">
+                      {item.name || item.item?.productId}
+                    </td>
+                    <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap border border-slate-300">
+                      {item.subName || item.itemId}
+                    </td>
+                    <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap border border-slate-300">
+                      {item.quantity}
+                    </td>
+                    <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap border border-slate-300">
                       <p
                         className={`w-fit mx-auto p-2 rounded-lg
                             ${
@@ -135,10 +135,16 @@ export const DetailBillView = () => {
                   </tr>
                 ))
               ) : (
-                <span className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
-                  <Box className="my-4" size={96} strokeWidth={1} />
-                  <p className="text-2xl text-slate-400">Trống</p>
-                </span>
+                <tr>
+                  <th
+                    colSpan={5}
+                    className="w-full text-slate-300 p-4 border border-slate-300 text-center"
+                  >
+                    <p className="text-2xl text-slate-400 py-10">
+                      Chưa có dữ liệu 😎
+                    </p>
+                  </th>
+                </tr>
               )}
             </tbody>
           </table>
