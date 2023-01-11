@@ -51,6 +51,7 @@ export const BestSeller = () => {
     <div className="p-4">
       <div className="bg-white flex flex-col rounded-lg p-4">
         <div className="text-center text-4xl py-4 font-bold">Hàng bán chạy</div>
+        <BarChart/>
         {/* Table */}
         <div className="overflow-x-auto relative">
           <table className="w-full text-sm text-left text-gray-500">
