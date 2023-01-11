@@ -12,7 +12,10 @@ const Product = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-
+  
+  useEffect(() => {
+    fetchData(itemId);
+  }, []);
   const fetchData = async (id) => {
     setLoading(true);
     try {
@@ -27,10 +30,6 @@ const Product = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData(itemId);
-    
-  }, []);
 
   return loading ? (
     <div className="flex h-full justify-center items-center">
