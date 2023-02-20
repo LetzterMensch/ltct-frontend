@@ -3,40 +3,24 @@ import { Bar } from "react-chartjs-2";
 import React, { useEffect, useState } from "react";
 import { client } from "../services/axios";
 
-let chartLabel = [];
-let chartData = [];
+
 const BarChart = () => {
   const [data, setData] = useState();
+  const [label, setLabel] = useState();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get(`/static/best-seller`);
-      console.log("Hello fetch Data.data");
-      console.log(data.data);
-      console.log("data");
-      console.log(data);
-      if (chartData.length != 10) {
-        for (let i = 0; i < 10; i++) {
-          chartData.push(data.data[i].sum);
-          chartLabel.push(data.data[i].itemId);
-        }
-      } else {
-        chartData.splice(0, chartData.length);
-        chartLabel.splice(0, chartLabel.length);
-        for (let i = 0; i < 10; i++) {
-          chartData.push(data.data[i].sum);
-          chartLabel.push(data.data[i].itemId);
-        }
+      const getData = await client.get(`/static/best-seller`);
+      let tmpData = [], tmpLabel = [];
+      for (let i = 0; i < getData.data.length; i++) {
+        tmpData[i] = getData.data[i].sum;
+        tmpLabel[i] = getData.data[i].itemId;
       }
-      // console.log("chart data");
-      // console.log(chartData);
-      // console.log(Array.isArray(chartData))
-      // console.log("chart label");
-      // console.log(chartLabel)
-      setData(data.data);
+      setData(tmpData);
+      setLabel(tmpLabel);
     } catch (error) {
       console.log(error);
       setError(error);
@@ -47,21 +31,17 @@ const BarChart = () => {
 
   useEffect(() => {
     fetchData();
-    console.log("Hello - use effect");
-    console.log(data);
-    console.log("chart data 2");
-    console.log(chartData);
   }, []);
 
   return (
     <div>
       <Bar
         data={{
-          labels: chartLabel,
+          labels: label,
           datasets: [
             {
               label: "# of items sold",
-              data: chartData,
+              data: data,
               backgroundColor: [
                 "rgba(255, 99, 132, 0.2)",
                 "rgba(54, 162, 235, 0.2)",
@@ -100,15 +80,6 @@ const BarChart = () => {
         width={600}
         options={{
           maintainAspectRatio: false,
-          scales: {
-            yAxes: [
-              {
-                ticks: {
-                  beginAtZero: true,
-                },
-              },
-            ],
-          },
           legend: {
             labels: {
               fontSize: 25,

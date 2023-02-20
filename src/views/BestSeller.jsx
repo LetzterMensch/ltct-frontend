@@ -31,7 +31,6 @@ export const BestSeller = () => {
 
   useEffect(() => {
     fetchData();
-    console.log("Hello");
   }, []);
 
   function viewDetailItem(arg) {

@@ -32,7 +32,15 @@ const Products = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      let listProduct = await (await axios.get('https://p01-product-api-production.up.railway.app/api/user/products')).data;
+      let listProduct = [];
+      
+      try {
+        const response = await axios.get('https://p01-product-api-production.up.railway.app/api/products');
+        if (response.status === 200) listProduct = response.data;
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+
       let showList = [];
       if (listProduct.data?.length > 0){
         await Promise.all(listProduct.data.map(async (item, index) => {
@@ -42,12 +50,6 @@ const Products = () => {
         console.log(showList);
         setData(showList);
       }
-      // listProduct.data?.map(() => {
-      //   let list
-      // });
-      // const data = await client.get(`/product/quantity/${id}`);
-      // console.log(data.data);
-      // return (data.data);
     } catch (error) {
       console.log(error);
       setError(error);
@@ -120,10 +122,12 @@ const Products = () => {
                   </tr>
                 ))
               ) : (
-                <span className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
-                  <Box className="my-4" size={96} strokeWidth={1} />
-                  <p className="text-2xl text-slate-400">Trống</p>
-                </span>
+                <tr>
+                  <td className="col-span-full flex flex-col justify-center items-center text-slate-300 p-4 border border-slate-300">
+                    <Box className="my-4" size={96} strokeWidth={1} />
+                    <p className="text-2xl text-slate-400">Trống</p>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
