@@ -9,6 +9,9 @@ Version 1.2.0
 Nhập xuất kho 
 Quản lý các đơn hàng xuất nhâp
 Thống kê các đơn hàng
+Cập nhật trạng thái sản phẩm, đơn hàng
+Xem thông tin các sản phẩm, đơn hàng
+...
 
 ## Hướng dẫn cài đặt 
 ```
