@@ -6,13 +6,14 @@ Version 1.2.0
 ### Project này ra đời để giải quyết vấn đề kho của hệ thống bán hàng này
 
 ## Các chức năng có thể
+```
 Nhập xuất kho 
 Quản lý các đơn hàng xuất nhâp
 Thống kê các đơn hàng
 Cập nhật trạng thái sản phẩm, đơn hàng
 Xem thông tin các sản phẩm, đơn hàng
 ...
-
+```
 ## Hướng dẫn cài đặt 
 ```
 Cài đặt môi trường npm phụ thuộc vào từng OS
